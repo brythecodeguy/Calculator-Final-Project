@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.DS_Store
+*.bk
+Module14_Reflection.pdf
+Module14_Screenshots.pdf
