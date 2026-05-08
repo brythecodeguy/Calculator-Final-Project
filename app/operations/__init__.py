@@ -19,3 +19,13 @@ def divide(a: Number, b: Number) -> float:
     if b == 0:
         raise ValueError("Cannot divide by zero!")
     return a / b
+
+
+def power(a: Number, b: Number) -> Number:
+    return a ** b
+
+
+def modulus(a: Number, b: Number) -> Number:
+    if b == 0:
+        raise ValueError("Cannot calculate modulus by zero!")
+    return a % b

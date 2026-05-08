@@ -34,6 +34,8 @@ class Calculation(Base):
             "subtraction": Subtraction,
             "multiplication": Multiplication,
             "division": Division,
+            "power": Power,
+            "modulus": Modulus,
         }
 
         calculation_class = calculation_classes.get(calculation_type.lower())
@@ -79,3 +81,19 @@ class Division(Calculation):
         if self.b == 0:
             raise ValueError("Cannot divide by zero.")
         return self.a / self.b
+
+
+class Power(Calculation):
+    __mapper_args__ = {"polymorphic_identity": "power"}
+
+    def get_result(self) -> float:
+        return self.a ** self.b
+
+
+class Modulus(Calculation):
+    __mapper_args__ = {"polymorphic_identity": "modulus"}
+
+    def get_result(self) -> float:
+        if self.b == 0:
+            raise ValueError("Cannot calculate modulus by zero.")
+        return self.a % self.b

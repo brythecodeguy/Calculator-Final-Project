@@ -11,6 +11,8 @@ class CalculationType(str, Enum):
     SUBTRACTION = "subtraction"
     MULTIPLICATION = "multiplication"
     DIVISION = "division"
+    POWER = "power"
+    MODULUS = "modulus"
 
 
 class CalculationBase(BaseModel):
@@ -44,6 +46,8 @@ class CalculationBase(BaseModel):
     def validate_inputs(self):
         if self.type == CalculationType.DIVISION and self.b == 0:
             raise ValueError("Division by zero is not allowed")
+        if self.type == CalculationType.MODULUS and self.b == 0:
+            raise ValueError("Modulus by zero is not allowed")
         return self
 
     model_config = ConfigDict(
@@ -90,6 +94,8 @@ class CalculationUpdate(BaseModel):
     def validate_inputs(self):
         if self.type == CalculationType.DIVISION and self.b == 0:
             raise ValueError("Division by zero is not allowed")
+        if self.type == CalculationType.MODULUS and self.b == 0:
+            raise ValueError("Modulus by zero is not allowed")
         return self
 
     model_config = ConfigDict(
