@@ -8,33 +8,77 @@ document.addEventListener("DOMContentLoaded", () => {
     setupEditCalculation();
 });
 
+function resetMessageBox(box) {
+    if (!box) return;
+
+    if (box.dataset.hideTimer) {
+        clearTimeout(Number(box.dataset.hideTimer));
+        delete box.dataset.hideTimer;
+    }
+
+    if (box.dataset.fadeTimer) {
+        clearTimeout(Number(box.dataset.fadeTimer));
+        delete box.dataset.fadeTimer;
+    }
+
+    box.textContent = "";
+    box.classList.add("hidden");
+    box.classList.remove("opacity-0");
+    box.classList.add("opacity-100", "transition-opacity", "duration-700");
+}
+
+function hideMessageBox(box) {
+    if (!box) return;
+
+    box.classList.remove("opacity-100");
+    box.classList.add("opacity-0");
+
+    const fadeTimer = setTimeout(() => {
+        box.classList.add("hidden");
+        box.textContent = "";
+        box.classList.remove("opacity-0");
+        box.classList.add("opacity-100");
+        delete box.dataset.fadeTimer;
+    }, 700);
+
+    box.dataset.fadeTimer = String(fadeTimer);
+}
+
+function showAlertBox(box, message, useHtml = false, delay = 6000) {
+    if (!box) return;
+
+    resetMessageBox(box);
+
+    if (useHtml) {
+        box.innerHTML = message;
+    } else {
+        box.textContent = message;
+    }
+
+    box.classList.remove("hidden", "opacity-0");
+    box.classList.add("opacity-100", "transition-opacity", "duration-700");
+
+    const hideTimer = setTimeout(() => {
+        hideMessageBox(box);
+        delete box.dataset.hideTimer;
+    }, delay);
+
+    box.dataset.hideTimer = String(hideTimer);
+}
+
 function showMessage(errorId, successId, message, isError = true) {
     const errorBox = document.getElementById(errorId);
     const successBox = document.getElementById(successId);
 
-    if (errorBox) {
-        errorBox.textContent = "";
-        errorBox.classList.add("hidden");
-    }
-
-    if (successBox) {
-        successBox.textContent = "";
-        successBox.classList.add("hidden");
-    }
+    resetMessageBox(errorBox);
+    resetMessageBox(successBox);
 
     if (isError && errorBox) {
-        errorBox.textContent = message;
-        errorBox.classList.remove("hidden");
+        showAlertBox(errorBox, message, false, 8000);
     }
 
     if (!isError && successBox) {
-        successBox.innerHTML = message;
-        successBox.classList.remove("hidden");
-
-        setTimeout(() => {
-            successBox.classList.add("hidden");
-            successBox.textContent = "";
-        }, 8000);
+        showAlertBox(successBox, message, true, 9000);
     }
 }
 
@@ -611,15 +655,13 @@ function setupEditCalculation() {
     const successAlert = document.getElementById("successAlert");
 
     function showError(message) {
-        errorAlert.textContent = message;
-        errorAlert.classList.remove("hidden");
-        successAlert.classList.add("hidden");
+        resetMessageBox(successAlert);
+        showAlertBox(errorAlert, message, false, 8000);
     }
 
     function showSuccess(message) {
-        successAlert.textContent = message;
-        successAlert.classList.remove("hidden");
-        errorAlert.classList.add("hidden");
+        resetMessageBox(errorAlert);
+        showAlertBox(successAlert, message, false, 9000);
     }
 
     function getOperator(type) {
