@@ -7,6 +7,8 @@ from app.models.calculation import (
     Subtraction,
     Multiplication,
     Division,
+    Power,
+    Modulus,
 )
 
 
@@ -42,6 +44,24 @@ def test_division_by_zero():
     division = Division(user_id=dummy_user_id(), a=50, b=0)
     with pytest.raises(ValueError, match="Cannot divide by zero"):
         division.get_result()
+
+
+def test_power_get_result():
+    power = Power(user_id=dummy_user_id(), a=2, b=3)
+    result = power.get_result()
+    assert result == 8
+
+
+def test_modulus_get_result():
+    modulus = Modulus(user_id=dummy_user_id(), a=10, b=3)
+    result = modulus.get_result()
+    assert result == 1
+
+
+def test_modulus_by_zero():
+    modulus = Modulus(user_id=dummy_user_id(), a=10, b=0)
+    with pytest.raises(ValueError, match="Cannot calculate modulus by zero"):
+        modulus.get_result()
 
 
 def test_calculation_factory_addition():
@@ -89,10 +109,42 @@ def test_calculation_factory_division():
     assert calc.get_result() == 20
 
 
+def test_calculation_factory_power():
+    calc = Calculation.create(
+        calculation_type="power",
+        user_id=dummy_user_id(),
+        a=2,
+        b=3,
+    )
+    assert isinstance(calc, Power)
+    assert calc.get_result() == 8
+
+
+def test_calculation_factory_modulus():
+    calc = Calculation.create(
+        calculation_type="modulus",
+        user_id=dummy_user_id(),
+        a=10,
+        b=3,
+    )
+    assert isinstance(calc, Modulus)
+    assert calc.get_result() == 1
+
+
+def test_calculation_factory_modulus_by_zero():
+    with pytest.raises(ValueError, match="Cannot calculate modulus by zero"):
+        Calculation.create(
+            calculation_type="modulus",
+            user_id=dummy_user_id(),
+            a=10,
+            b=0,
+        )
+
+
 def test_calculation_factory_invalid_type():
     with pytest.raises(ValueError, match="Unsupported calculation type"):
         Calculation.create(
-            calculation_type="modulus",
+            calculation_type="square_root",
             user_id=dummy_user_id(),
             a=10,
             b=3,
@@ -119,22 +171,26 @@ def test_polymorphic_list_of_calculations():
         Calculation.create("subtraction", user_id, 10, 3),
         Calculation.create("multiplication", user_id, 2, 4),
         Calculation.create("division", user_id, 100, 5),
+        Calculation.create("power", user_id, 2, 3),
+        Calculation.create("modulus", user_id, 10, 3),
     ]
 
     assert isinstance(calculations[0], Addition)
     assert isinstance(calculations[1], Subtraction)
     assert isinstance(calculations[2], Multiplication)
     assert isinstance(calculations[3], Division)
+    assert isinstance(calculations[4], Power)
+    assert isinstance(calculations[5], Modulus)
 
     results = [calc.get_result() for calc in calculations]
-    assert results == [3, 7, 8, 20]
+    assert results == [3, 7, 8, 20, 8, 1]
 
 
 def test_polymorphic_method_calling():
     user_id = dummy_user_id()
 
-    calc_types = ["addition", "subtraction", "multiplication", "division"]
-    expected_results = [12, 8, 20, 5]
+    calc_types = ["addition", "subtraction", "multiplication", "division", "power", "modulus"]
+    expected_results = [12, 8, 20, 5, 100, 0]
 
     for calc_type, expected in zip(calc_types, expected_results):
         calc = Calculation.create(calc_type, user_id, 10, 2)

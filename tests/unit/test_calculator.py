@@ -2,7 +2,7 @@
 
 import pytest  # Import the pytest framework for writing and running tests
 from typing import Union  # Import Union for type hinting multiple possible types
-from app.operations import add, subtract, multiply, divide  # Import the calculator functions from the operations module
+from app.operations import add, subtract, multiply, divide, power, modulus  # Import the calculator functions from the operations module
 
 # Define a type alias for numbers that can be either int or float
 Number = Union[int, float]
@@ -152,3 +152,74 @@ def test_divide_by_zero() -> None:
     # Assert that the exception message contains the expected error message
     assert "Cannot divide by zero!" in str(excinfo.value), \
         f"Expected error message 'Cannot divide by zero!', but got '{excinfo.value}'"
+
+
+# ---------------------------------------------
+# Unit Tests for the 'power' Function
+# ---------------------------------------------
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        (2, 3, 8),            # Test exponentiation with positive integers
+        (5, 0, 1),            # Test any number raised to zero
+        (4, 0.5, 2.0),        # Test fractional exponent
+        (-2, 3, -8),          # Test negative base with odd exponent
+    ],
+    ids=[
+        "power_positive_integers",
+        "power_zero_exponent",
+        "power_fractional_exponent",
+        "power_negative_base_odd_exponent",
+    ]
+)
+def test_power(a: Number, b: Number, expected: Number) -> None:
+    """
+    Test the 'power' function with integers and floats.
+    """
+    result = power(a, b)
+
+    assert result == expected, f"Expected power({a}, {b}) to be {expected}, but got {result}"
+
+
+# ---------------------------------------------
+# Unit Tests for the 'modulus' Function
+# ---------------------------------------------
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        (10, 3, 1),           # Test positive integer remainder
+        (10, 5, 0),           # Test evenly divisible numbers
+        (10.5, 4, 2.5),       # Test float dividend
+        (-10, 3, 2),          # Test Python modulus behavior with negative dividend
+    ],
+    ids=[
+        "modulus_positive_integers",
+        "modulus_evenly_divisible",
+        "modulus_float_dividend",
+        "modulus_negative_dividend",
+    ]
+)
+def test_modulus(a: Number, b: Number, expected: Number) -> None:
+    """
+    Test the 'modulus' function with integers and floats.
+    """
+    result = modulus(a, b)
+
+    assert result == expected, f"Expected modulus({a}, {b}) to be {expected}, but got {result}"
+
+
+# ---------------------------------------------
+# Negative Test Case: Modulus by Zero
+# ---------------------------------------------
+
+def test_modulus_by_zero() -> None:
+    """
+    Test the 'modulus' function with modulus by zero.
+    """
+    with pytest.raises(ValueError) as excinfo:
+        modulus(10, 0)
+
+    assert "Cannot calculate modulus by zero!" in str(excinfo.value), \
+        f"Expected error message 'Cannot calculate modulus by zero!', but got '{excinfo.value}'"

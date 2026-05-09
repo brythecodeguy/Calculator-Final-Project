@@ -17,6 +17,8 @@ def test_calculation_type_enum_values():
     assert CalculationType.SUBTRACTION.value == "subtraction"
     assert CalculationType.MULTIPLICATION.value == "multiplication"
     assert CalculationType.DIVISION.value == "division"
+    assert CalculationType.POWER.value == "power"
+    assert CalculationType.MODULUS.value == "modulus"
 
 
 def test_calculation_base_valid_addition():
@@ -43,6 +45,30 @@ def test_calculation_base_valid_subtraction():
     assert calc.b == 5.5
 
 
+def test_calculation_base_valid_power():
+    data = {
+        "type": "power",
+        "a": 2,
+        "b": 3,
+    }
+    calc = CalculationBase(**data)
+    assert calc.type == CalculationType.POWER
+    assert calc.a == 2
+    assert calc.b == 3
+
+
+def test_calculation_base_valid_modulus():
+    data = {
+        "type": "modulus",
+        "a": 10,
+        "b": 3,
+    }
+    calc = CalculationBase(**data)
+    assert calc.type == CalculationType.MODULUS
+    assert calc.a == 10
+    assert calc.b == 3
+
+
 def test_calculation_base_case_insensitive_type():
     for type_variant in ["Addition", "ADDITION", "AdDiTiOn"]:
         data = {"type": type_variant, "a": 1, "b": 2}
@@ -52,7 +78,7 @@ def test_calculation_base_case_insensitive_type():
 
 def test_calculation_base_invalid_type():
     data = {
-        "type": "modulus",
+        "type": "square_root",
         "a": 10,
         "b": 3,
     }
@@ -72,6 +98,18 @@ def test_calculation_base_division_by_zero():
         CalculationBase(**data)
 
     assert "Division by zero is not allowed" in str(exc_info.value)
+
+
+def test_calculation_base_modulus_by_zero():
+    data = {
+        "type": "modulus",
+        "a": 100,
+        "b": 0,
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        CalculationBase(**data)
+
+    assert "Modulus by zero is not allowed" in str(exc_info.value)
 
 
 def test_calculation_base_zero_numerator_ok():
@@ -95,6 +133,42 @@ def test_calculation_create_valid():
     assert calc.type == CalculationType.MULTIPLICATION
     assert calc.a == 2
     assert calc.b == 3
+
+
+def test_calculation_create_valid_power():
+    data = {
+        "type": "power",
+        "a": 2,
+        "b": 3,
+    }
+    calc = CalculationCreate(**data)
+    assert calc.type == CalculationType.POWER
+    assert calc.a == 2
+    assert calc.b == 3
+
+
+def test_calculation_create_valid_modulus():
+    data = {
+        "type": "modulus",
+        "a": 10,
+        "b": 3,
+    }
+    calc = CalculationCreate(**data)
+    assert calc.type == CalculationType.MODULUS
+    assert calc.a == 10
+    assert calc.b == 3
+
+
+def test_calculation_create_modulus_by_zero():
+    data = {
+        "type": "modulus",
+        "a": 10,
+        "b": 0,
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        CalculationCreate(**data)
+
+    assert "Modulus by zero is not allowed" in str(exc_info.value)
 
 
 def test_calculation_create_missing_type():
@@ -160,6 +234,18 @@ def test_calculation_update_division_by_zero():
     assert "Division by zero is not allowed" in str(exc_info.value)
 
 
+def test_calculation_update_modulus_by_zero():
+    data = {
+        "type": "modulus",
+        "a": 10,
+        "b": 0,
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        CalculationUpdate(**data)
+
+    assert "Modulus by zero is not allowed" in str(exc_info.value)
+
+
 def test_calculation_read_valid():
     data = {
         "id": str(uuid4()),
@@ -198,15 +284,19 @@ def test_multiple_calculations_with_different_types():
         {"type": "subtraction", "a": 10, "b": 3},
         {"type": "multiplication", "a": 2, "b": 4},
         {"type": "division", "a": 100, "b": 5},
+        {"type": "power", "a": 2, "b": 3},
+        {"type": "modulus", "a": 10, "b": 3},
     ]
 
     calcs = [CalculationCreate(**data) for data in calcs_data]
 
-    assert len(calcs) == 4
+    assert len(calcs) == 6
     assert calcs[0].type == CalculationType.ADDITION
     assert calcs[1].type == CalculationType.SUBTRACTION
     assert calcs[2].type == CalculationType.MULTIPLICATION
     assert calcs[3].type == CalculationType.DIVISION
+    assert calcs[4].type == CalculationType.POWER
+    assert calcs[5].type == CalculationType.MODULUS
 
 
 def test_schema_with_large_numbers():
@@ -261,4 +351,26 @@ def test_calculation_update_model_validator_raises_for_division_by_zero():
     )
 
     with pytest.raises(ValueError, match="Division by zero is not allowed"):
+        calc.validate_inputs()
+
+
+def test_calculation_base_model_validator_raises_for_modulus_by_zero():
+    calc = CalculationBase.model_construct(
+        type=CalculationType.MODULUS,
+        a=10,
+        b=0,
+    )
+
+    with pytest.raises(ValueError, match="Modulus by zero is not allowed"):
+        calc.validate_inputs()
+
+
+def test_calculation_update_model_validator_raises_for_modulus_by_zero():
+    calc = CalculationUpdate.model_construct(
+        type=CalculationType.MODULUS,
+        a=10,
+        b=0,
+    )
+
+    with pytest.raises(ValueError, match="Modulus by zero is not allowed"):
         calc.validate_inputs()

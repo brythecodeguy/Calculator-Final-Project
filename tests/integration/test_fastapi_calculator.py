@@ -235,6 +235,50 @@ def get_auth_headers(client):
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_create_power_calculation_api(client):
+    headers = get_auth_headers(client)
+
+    response = client.post(
+        "/calculations",
+        json={"type": "power", "a": 2, "b": 3},
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["type"] == "power"
+    assert data["result"] == 8
+
+
+def test_create_modulus_calculation_api(client):
+    headers = get_auth_headers(client)
+
+    response = client.post(
+        "/calculations",
+        json={"type": "modulus", "a": 10, "b": 3},
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["type"] == "modulus"
+    assert data["result"] == 1
+
+
+def test_create_modulus_by_zero_api(client):
+    headers = get_auth_headers(client)
+
+    response = client.post(
+        "/calculations",
+        json={"type": "modulus", "a": 10, "b": 0},
+        headers=headers,
+    )
+
+    assert response.status_code == 400
+    assert "error" in response.json()
+    assert "Modulus by zero is not allowed" in response.json()["error"]
+
+
 def test_read_calculation_not_found(client):
     headers = get_auth_headers(client)
     fake_id = "11111111-1111-1111-1111-111111111111"
