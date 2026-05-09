@@ -279,6 +279,32 @@ def test_create_modulus_by_zero_api(client):
     assert "Modulus by zero is not allowed" in response.json()["error"]
 
 
+def test_update_calculation_changes_type_and_result_api(client):
+    headers = get_auth_headers(client)
+
+    create_response = client.post(
+        "/calculations",
+        json={"type": "addition", "a": 10, "b": 5},
+        headers=headers,
+    )
+
+    assert create_response.status_code == 201
+    calculation_id = create_response.json()["id"]
+
+    update_response = client.put(
+        f"/calculations/{calculation_id}",
+        json={"type": "division", "a": 20, "b": 4},
+        headers=headers,
+    )
+
+    assert update_response.status_code == 200
+    data = update_response.json()
+    assert data["type"] == "division"
+    assert data["a"] == 20
+    assert data["b"] == 4
+    assert data["result"] == 5
+
+
 def test_read_calculation_not_found(client):
     headers = get_auth_headers(client)
     fake_id = "11111111-1111-1111-1111-111111111111"
