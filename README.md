@@ -203,3 +203,19 @@ The existing `calculations.type` column is already a string column, so it can st
 Docker Hub repository:
 
 <https://hub.docker.com/repository/docker/bry633/calculator-final-project>
+
+## Screenshots
+
+### Home Page
+
+![Home Page](docs/images/homepage.png)
+
+### Calculations Dashboard
+
+![Calculations Dashboard](docs/images/dashboard.png)
+
+## Reflection
+
+The final project reflection is available here:
+
+[Final Project Reflection PDF](docs/Final_Project_Reflection.pdf)
