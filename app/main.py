@@ -353,14 +353,33 @@ def update_calculation(
             b=new_b,
         )
 
-        calculation.type = updated_calc.type
-        calculation.a = updated_calc.a
-        calculation.b = updated_calc.b
-        calculation.result = updated_calc.result
+        db.expunge(calculation)
+
+        db.query(Calculation).filter(
+            Calculation.id == calculation_id,
+            Calculation.user_id == current_user.id,
+        ).update(
+            {
+                Calculation.type: updated_calc.type,
+                Calculation.a: updated_calc.a,
+                Calculation.b: updated_calc.b,
+                Calculation.result: updated_calc.result,
+                Calculation.updated_at: datetime.utcnow(),
+            },
+            synchronize_session=False,
+        )
 
         db.commit()
-        db.refresh(calculation)
-        return CalculationRead.model_validate(calculation)
+
+        updated_calculation = (
+            db.query(Calculation)
+            .filter(
+                Calculation.id == calculation_id,
+                Calculation.user_id == current_user.id,
+            )
+            .first()
+        )
+        return CalculationRead.model_validate(updated_calculation)
 
     except ValueError as e:
         db.rollback()
