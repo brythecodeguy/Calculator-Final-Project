@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.database import Base
+from app.operations import calculate
 
 
 class Calculation(Base):
@@ -47,7 +48,9 @@ class Calculation(Base):
         return calculation
 
     def get_result(self) -> float:
-        raise NotImplementedError("Subclasses must implement get_result()")
+        if self.type == "calculation":
+            raise NotImplementedError("Subclasses must implement get_result()")
+        return calculate(self.type, self.a, self.b)
 
     def __repr__(self):
         return f"<Calculation(type={self.type}, a={self.a}, b={self.b}, result={self.result})>"
@@ -56,44 +59,22 @@ class Calculation(Base):
 class Addition(Calculation):
     __mapper_args__ = {"polymorphic_identity": "addition"}
 
-    def get_result(self) -> float:
-        return self.a + self.b
-
 
 class Subtraction(Calculation):
     __mapper_args__ = {"polymorphic_identity": "subtraction"}
-
-    def get_result(self) -> float:
-        return self.a - self.b
 
 
 class Multiplication(Calculation):
     __mapper_args__ = {"polymorphic_identity": "multiplication"}
 
-    def get_result(self) -> float:
-        return self.a * self.b
-
 
 class Division(Calculation):
     __mapper_args__ = {"polymorphic_identity": "division"}
-
-    def get_result(self) -> float:
-        if self.b == 0:
-            raise ValueError("Cannot divide by zero.")
-        return self.a / self.b
 
 
 class Power(Calculation):
     __mapper_args__ = {"polymorphic_identity": "power"}
 
-    def get_result(self) -> float:
-        return self.a ** self.b
-
 
 class Modulus(Calculation):
     __mapper_args__ = {"polymorphic_identity": "modulus"}
-
-    def get_result(self) -> float:
-        if self.b == 0:
-            raise ValueError("Cannot calculate modulus by zero.")
-        return self.a % self.b

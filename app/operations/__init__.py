@@ -29,3 +29,20 @@ def modulus(a: Number, b: Number) -> Number:
     if b == 0:
         raise ValueError("Cannot calculate modulus by zero!")
     return a % b
+
+
+OPERATIONS = {
+    "addition": add,
+    "subtraction": subtract,
+    "multiplication": multiply,
+    "division": divide,
+    "power": power,
+    "modulus": modulus,
+}
+
+
+def calculate(operation_type: str, a: Number, b: Number) -> Number:
+    operation = OPERATIONS.get(operation_type.lower())
+    if not operation:
+        raise ValueError(f"Unsupported calculation type: {operation_type}")
+    return operation(a, b)
