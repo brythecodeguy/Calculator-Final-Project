@@ -2,7 +2,7 @@
 
 import pytest  # Import the pytest framework for writing and running tests
 from typing import Union  # Import Union for type hinting multiple possible types
-from app.operations import add, subtract, multiply, divide, power, modulus  # Import the calculator functions from the operations module
+from app.operations import add, subtract, multiply, divide, power, modulus, calculate  # Import the calculator functions from the operations module
 
 # Define a type alias for numbers that can be either int or float
 Number = Union[int, float]
@@ -223,3 +223,48 @@ def test_modulus_by_zero() -> None:
 
     assert "Cannot calculate modulus by zero!" in str(excinfo.value), \
         f"Expected error message 'Cannot calculate modulus by zero!', but got '{excinfo.value}'"
+
+
+# ---------------------------------------------
+# Tests for the 'calculate' Dispatcher
+# ---------------------------------------------
+
+@pytest.mark.parametrize(
+    "operation_type, a, b, expected",
+    [
+        ("addition", 10, 5, 15),
+        ("subtraction", 10, 5, 5),
+        ("multiplication", 10, 5, 50),
+        ("division", 20, 4, 5),
+        ("power", 2, 3, 8),
+        ("modulus", 10, 3, 1),
+    ],
+    ids=[
+        "calculate_addition",
+        "calculate_subtraction",
+        "calculate_multiplication",
+        "calculate_division",
+        "calculate_power",
+        "calculate_modulus",
+    ]
+)
+def test_calculate_dispatch(operation_type: str, a: Number, b: Number, expected: Number) -> None:
+    """
+    Test the 'calculate' dispatcher routes operation types to the correct function.
+    """
+    result = calculate(operation_type, a, b)
+
+    assert result == expected, (
+        f"Expected calculate({operation_type}, {a}, {b}) to be {expected}, but got {result}"
+    )
+
+
+def test_calculate_invalid_operation_type() -> None:
+    """
+    Test the 'calculate' dispatcher with an unsupported operation type.
+    """
+    with pytest.raises(ValueError) as excinfo:
+        calculate("square_root", 10, 2)
+
+    assert "Unsupported calculation type: square_root" in str(excinfo.value), \
+        f"Expected unsupported calculation type error, but got '{excinfo.value}'"
