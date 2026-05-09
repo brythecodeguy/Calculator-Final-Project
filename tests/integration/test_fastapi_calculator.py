@@ -522,11 +522,25 @@ def test_update_calculation_success_direct(monkeypatch):
     fake_updated = SimpleNamespace(type="subtraction", a=5, b=2, result=3)
 
     class FakeQuery:
+        def __init__(self, db):
+            self.db = db
+
         def filter(self, *args, **kwargs): return self
-        def first(self): return fake_existing
+        def first(self): return self.db.calculation
+        def update(self, values, synchronize_session=False):
+            self.db.calculation.type = values[main_module.Calculation.type]
+            self.db.calculation.a = values[main_module.Calculation.a]
+            self.db.calculation.b = values[main_module.Calculation.b]
+            self.db.calculation.result = values[main_module.Calculation.result]
+            self.db.calculation.updated_at = values[main_module.Calculation.updated_at]
+            return 1
 
     class FakeDB:
-        def query(self, model): return FakeQuery()
+        def __init__(self):
+            self.calculation = fake_existing
+
+        def query(self, model): return FakeQuery(self)
+        def expunge(self, obj): self.expunge_called_with = obj
         def commit(self): pass
         def refresh(self, obj): pass
         def rollback(self): pass
