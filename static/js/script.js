@@ -289,6 +289,16 @@ function setupDashboard() {
                 return;
             }
 
+            if (calcType === "division" && b === 0) {
+                showMessage("dashboardError", "dashboardSuccess", "Division by zero is not allowed.");
+                return;
+            }
+
+            if (calcType === "modulus" && b === 0) {
+                showMessage("dashboardError", "dashboardSuccess", "Modulus by zero is not allowed.");
+                return;
+            }
+
             try {
                 const response = await fetch("/calculations", {
                     method: "POST",
@@ -554,6 +564,8 @@ function setupViewCalculation() {
             if (calc.type === "subtraction") operator = "-";
             if (calc.type === "multiplication") operator = "×";
             if (calc.type === "division") operator = "÷";
+            if (calc.type === "power") operator = "^";
+            if (calc.type === "modulus") operator = "%";
 
             document.getElementById("visualA").textContent = calc.a;
             document.getElementById("visualOperator").textContent = operator;
@@ -615,6 +627,8 @@ function setupEditCalculation() {
         if (type === "subtraction") return "-";
         if (type === "multiplication") return "×";
         if (type === "division") return "÷";
+        if (type === "power") return "^";
+        if (type === "modulus") return "%";
         return "?";
     }
 
@@ -627,6 +641,11 @@ function setupEditCalculation() {
         if (type === "division") {
             if (b === 0) return "Cannot divide by zero";
             return a / b;
+        }
+        if (type === "power") return a ** b;
+        if (type === "modulus") {
+            if (b === 0) return "Cannot calculate modulus by zero";
+            return a % b;
         }
 
         return "";
@@ -697,6 +716,11 @@ function setupEditCalculation() {
 
         if (type === "division" && b === 0) {
             showError("Division by zero is not allowed.");
+            return;
+        }
+
+        if (type === "modulus" && b === 0) {
+            showError("Modulus by zero is not allowed.");
             return;
         }
 
